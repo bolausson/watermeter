@@ -1,0 +1,6 @@
+**/*~
+**/DEADJOE
+!**/.keep
+retrain_images/
+training/data_*.pickle
+training/image-set/training_image-set_*.pickle

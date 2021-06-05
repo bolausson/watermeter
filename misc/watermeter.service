@@ -1,0 +1,20 @@
+[Unit]
+Description=Collect images from water meter
+After=multi-user.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+ExecStart=/home/pi/watermeter/monitor-water.py
+KillMode=control-group
+Restart=on-failure
+RestartSec=90
+StartLimitInterval=400
+StartLimitBurst=3
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=WaterMeter
+
+[Install]
+WantedBy=multi-user.target

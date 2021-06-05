@@ -1,0 +1,13 @@
+# Camera monitoring COLD water meter
+# udevadm info -a -n /dev/video0
+SUBSYSTEM=="video4linux", ATTRS{product}=="Logitech Webcam C925e", ATTRS{serial}=="D0DF3FCF", SYMLINK+="videoCOLD"
+SUBSYSTEM=="video4linux", ATTRS{product}=="Logitech Webcam C925e", ATTRS{serial}=="D0DF3FCF", SYMLINK+="video315124"
+# udevadm test --action="add" /sys/bus/usb/devices/1-1.1.1
+# udevadm control --reload-rules && udevadm trigger
+
+# Camera monitoring WARM water meter
+# udevadm info -a -n /dev/video1
+SUBSYSTEM=="video4linux", ATTRS{product}=="Logitech Webcam C925e", ATTRS{serial}=="7E2D3FCF", SYMLINK+="videoWARM"
+SUBSYSTEM=="video4linux", ATTRS{product}=="Logitech Webcam C925e", ATTRS{serial}=="7E2D3FCF", SYMLINK+="video2411813"
+# udevadm test --action="add" /sys/bus/usb/devices/1-1.1.2
+# udevadm control --reload-rules && udevadm trigger
