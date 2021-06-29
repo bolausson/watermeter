@@ -69,8 +69,10 @@ max_increase_mm3 = {"warm": 0.020, "cold": 0.020}
 big_box = {
                 "warm": 
                     {
+                        # Smaller number for X moves box more towards the right (end) of the numbers
                         "upper_left_x": 767,
-                        "upper_left_y": 464,
+                        # Smaller number for y moves box more towards the bottom of the numbers
+                        "upper_left_y": 474,
                         "box_width": 348,
                         "box_height": 83,
 
@@ -88,8 +90,10 @@ big_box = {
                     },
                 "cold":
                     {
+                        # Smaller number for X moves box more towards the left (start) of the numbers
                         "upper_left_x": 877,
-                        "upper_left_y": 525,
+                        # Smaller number for Y moves box more towards the top of the numbers
+                        "upper_left_y": 530,
                         "box_width": 351,
                         "box_height": 83,
 
