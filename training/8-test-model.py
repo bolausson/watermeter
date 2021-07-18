@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 #
 #
 
@@ -14,6 +14,7 @@ import socket
 import signal
 import random
 import logging
+import argparse
 import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
@@ -38,6 +39,30 @@ input_shape = (img_rows, img_cols, 1)
 
 print("Use space key for next image")
 print("Use Esc key to exit")
+
+parser = argparse.ArgumentParser(description='Use space key for next image\n Use Esc key to exit')
+
+parser.add_argument(
+    '-n',
+    '--number',
+    dest='number_to_check',
+    type=int,
+    default=-1,
+    help='Check only single number')
+
+
+parser.add_argument(
+    '-s',
+    '--start',
+    dest='start_with',
+    type=int,
+    default=-1,
+    help='Start checking numbers from')
+
+args = parser.parse_args()
+
+NUMBER_TO_CHECK = args.number_to_check
+START_WITH = args.start_with
 
 #modelfiles = ["wasser_model_2021.03.19_16-45-11.h5", "wasser_model_2021.03.30_23-43-25.h5", "wasser_model_2021.04.01_22-34-19.h5", "wasser_model_2021.04.01_22-46-59.h5"]
 modelfiles = sorted(glob.glob("model/wasser_model_*.h5"))
@@ -65,9 +90,22 @@ for i, modelfile in enumerate(modelfiles):
 #random.shuffle(filelist)
 
 def test_models():
-    for key in digit_dict.keys():
+    nummodels = len(model.keys())
+
+    if NUMBER_TO_CHECK >= 0:
+        keys = [NUMBER_TO_CHECK]
+    else:
+        keys = list(digit_dict.keys())
+    
+    if START_WITH >= 0:
+        print(keys)
+        keys = keys[START_WITH:]
+
+    for key in keys:
         numfeat = len(digit_dict[key])
+        print(f"Number of features for key {key}: {numfeat}")
         for i, imgfile in enumerate(digit_dict[key]):
+            print(f"Image {i}/{numfeat}")
             #winname = f"Feature-{i}"
             winname = "Feature"
             cv2.namedWindow(winname)
@@ -87,7 +125,9 @@ def test_models():
             # predict digit
             #print(f"--------------------- Predicting feature {i}/{numfeat} from bucket {key}---------------------")
             #cv2.imshow(winname, imgfile)
+            #print(f"Image {i}/{numfeat}")
             for j, m in enumerate(model.keys()):
+                print(f"  Model: {m} {j+1}/{nummodels}")
                 predictions = model[m].predict(imglist)
                 #print(predictions)
                 best = predictions.argmax()
@@ -95,13 +135,28 @@ def test_models():
                 percent = accuracy * 100
 
                 if accuracy == 1:
-                    c = Fore.GREEN
-                    #print(f"Best match: {c}{best}{Style.RESET_ALL} with {c}{accuracy:0.16f} accuracy{Style.RESET_ALL} using model {c}{m}{Style.RESET_ALL}")
+                    if best == key:
+                        c = Fore.GREEN
+                        cm = Fore.GREEN
+                    else:
+                        cv2.imshow(winname, imgfile)
+                        c = Fore.YELLOW
+                        cm = Fore.RED
+
+                    #print(f"    Best match: {c}{best}{Style.RESET_ALL} with {c}{accuracy:0.16f} accuracy{Style.RESET_ALL} using model {c}{m}{Style.RESET_ALL}")
+                    print(f"    Matched {key} as {c}{best}{Style.RESET_ALL} with {c}{accuracy:0.16f} accuracy{Style.RESET_ALL} using model {c}{m}{Style.RESET_ALL}")
                     keypress = cv2.waitKey(1)
                 else:
-                    c = Fore.YELLOW
-                    print(f"Matched {key} as {c}{best}{Style.RESET_ALL} with {c}{accuracy:0.16f} accuracy{Style.RESET_ALL} using model {c}{m}{Style.RESET_ALL}")
                     cv2.imshow(winname, imgfile)
+
+                    if best == key:
+                        c = Fore.YELLOW
+                        cm = Fore.GREEN
+                    else:
+                        c = Fore.RED
+                        cm = Fore.RED
+                    
+                    print(f"    Matched {key} as {cm}{best}{Style.RESET_ALL} with {c}{accuracy:0.16f} accuracy{Style.RESET_ALL} using model {c}{m}{Style.RESET_ALL}")
                     keypress = cv2.waitKey(1)
                     
                 if best == key:
@@ -110,7 +165,7 @@ def test_models():
                     scoredict[m]["Overall"]["Hit"] += 1
                     scoredict[m]["Overall"]["Tests"] += 1
                 else:
-                    print(f"{Fore.RED}{key} INCORRECT recognized{Style.RESET_ALL} as {c}{best}{Style.RESET_ALL} with {c}{accuracy:0.16f} accuracy{Style.RESET_ALL} using model {c}{m}{Style.RESET_ALL}")
+                    print(f"    {Fore.RED}{key} INCORRECT recognized{Style.RESET_ALL} as {c}{best}{Style.RESET_ALL} with {c}{accuracy:0.16f} accuracy{Style.RESET_ALL} using model {c}{m}{Style.RESET_ALL}")
                     scoredict[m][key]["Miss"] += 1
                     scoredict[m][key]["Tests"] += 1
                     scoredict[m]["Overall"]["Miss"] += 1
@@ -121,6 +176,10 @@ def test_models():
                     # ESC key
                     cv2.destroyAllWindows()
                     return
+
+                if keypress == 32:
+                    # SPACE key
+                    keypress = cv2.waitKey()
 
 #    max_score = i + 1
 #    print(f'\nMax possible "score": {max_score}')

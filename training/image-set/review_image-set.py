@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 #
 #
 
@@ -98,8 +98,13 @@ for i in review:
             # ESC key
             cv2.destroyAllWindows()
             sys.exit(0)
+
+        if keypress == 32:
+            # SPACE key
+            cv2.waitKey(0)
+
         if keypress == 115 or keypress == 110:
-            # s key or n key
+            # s key or n key or space key
             break
 
 cv2.destroyAllWindows()

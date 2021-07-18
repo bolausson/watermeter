@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 #
 #
 
@@ -39,8 +39,8 @@ pp = pprint.PrettyPrinter(indent=4)
 UNCHANGING_DIGITS = {
                     "cold": {
                                 0: 0,
-                                1: 0,
-                                2: 9,
+                                1: 1,
+                                2: 0,
 #                                3: 6,
 #                                4: 8,
 #                                5: 0,
@@ -49,8 +49,8 @@ UNCHANGING_DIGITS = {
                     "warm": {
                                 0: 0,
                                 1: 0,
-                                2: 4,
-                                3: 9,
+                                2: 5,
+                                3: 1,
 #                                4: 4,
 #                                5: 0,
 #                                6: 0,
@@ -71,20 +71,27 @@ pp = pprint.PrettyPrinter(indent=4)
 #                                              'org': '/home/pi/wasser/training-set/2021.03.18/cam2/image_2021.03.18_09-15-13_cam2.jpg',
 #                                              'threshold': '/home/pi/wasser/training-set/2021.03.18/cam2/image_2021.03.18_09-15-13_cam2.jpg-1-threshhold.png'},
 
-def autosave(data):
-    autosavefile = SORTED_PICKLE
-    cprint(f"------------------------------------------------------- Saving data to {autosavefile} ------------------------------------------------------- ", "red")
+def autosave(data, ts):
+    autosavefile = bf = SORTED_PICKLE.replace(".pickle", f"_autosave-{ts}.pickle")
     
-    with open(autosavefile, "wb") as autosave:
-        pickle.dump(data, autosave, pickle.HIGHEST_PROTOCOL)
+    cprint(f"------------------------------------------------------- Saving data to {autosavefile} --------------------------", "red")
+    
+    with open(autosavefile, "wb") as save:
+        pickle.dump(data, save, pickle.HIGHEST_PROTOCOL)
 
 def backup(data, ts):
     bf = SORTED_PICKLE.replace(".pickle", f"{ts}.pickle")
-    crint(f"------------------------------------------------------- Saving data to {bf}---------------------------------------------------------------------", "red")
+    cprint(f"------------------------------------------------------- Saving data to {bf}---------------------------------------------------------------------", "red")
 
     with open(bf, "wb") as save:
         pickle.dump(data, save, pickle.HIGHEST_PROTOCOL)
 
+def save(data):
+    savefile = SORTED_PICKLE
+    cprint(f"------------------------------------------------------- Saving data to {savefile} -------------------------------------------------------", "red")
+    
+    with open(savefile, "wb") as save:
+        pickle.dump(data, save, pickle.HIGHEST_PROTOCOL)
 
 if os.path.isfile(DATAPATH_PICKLE):
     with open(DATAPATH_PICKLE, 'rb') as f:
@@ -365,6 +372,7 @@ for woc in ["cold", "warm"]:
                             print(digit)
                             data[f][digit].append(fet_image_reshaped)
                         elif keypress == 98:
+                            # b key
                             ts = datetime.now().strftime("%Y.%m.%d_%H-%M-%S")
                             backup(data, ts)
                             CHKINP = True
@@ -378,20 +386,25 @@ for woc in ["cold", "warm"]:
                                 else:
                                     CHKINP = True
                         elif keypress == 113:
+                            # s key
                             print("Saving and quitting")
-                            autosave(data)
+                            save(data)
                             sys.exit(0)
                         else:
                             print(f"Unknow key {keypress}")
                             print("Image skipped")
                     #cprint(f"Features remaining for position {i}: {num_features}", "green")
                     if counter == 10:
-                        autosave(data)
+                        ts = datetime.now().strftime("%Y.%m.%d_%H-%M-%S")
+                        autosave(data, ts)
+                        save(data)
                         counter = 0
                     else:
                         counter += 1
                         
 #print('Data shape:', np.array(data[f]).shape)
-autosave(data)
+ts = datetime.now().strftime("%Y.%m.%d_%H-%M-%S")
+autosave(data, ts)
+save(data)
 cv2.destroyAllWindows()
 cprint("Done! All imagees have been classified.", "green")

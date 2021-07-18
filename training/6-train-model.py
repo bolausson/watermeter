@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 #
 #
 
@@ -57,7 +57,7 @@ parser.add_argument(
     '--same',
     dest='use_same_n',
     action='store_true',
-    help='Use same count of images per class - default is to reduce all images to the same ammount per class')
+    help='Use same count of images per class - default is to use all images available per class')
 
 args = parser.parse_args()
 
@@ -71,8 +71,8 @@ img_rows, img_cols = image_size
 input_shape = (img_rows, img_cols, 1)
 num_classes = 10
 
-batch_size = 100
-epochs = 50
+batch_size = 500
+epochs = 100
 validation_split=0.2
 shuffle=False
 
@@ -129,19 +129,20 @@ for i in range(0, 10, 1):
 
 least_n = min(n_per_class)
 max_n = max(n_per_class)
-if USE_SAME_N:
-    print(f"Using max {least_n} images per class")
 #print(n_per_class)
 #print(least_n)
 #print(max_n)
 
 for i in range(0, 10, 1):
-    if USE_SAME_N:
-        use_images = digit_dict[i][:least_n]
-    else:
-        use_images = digit_dict[i]
+    shuffled_dict = digit_dict[i]
+    random.shuffle(shuffled_dict)
 
-    random.shuffle(use_images)
+    if USE_SAME_N:
+        use_images = shuffled_dict[:least_n]
+        print(f"{Fore.RED}Using {len(use_images)} images for class ${i}{Style.RESET_ALL}")
+    else:
+        use_images = shuffled_dict
+        print(f"{Fore.RED}Using {len(use_images)} for class ${i}{Style.RESET_ALL}")
 
     xtrn = use_images[:USE_N_FOR_TEST]
     xtst = use_images[USE_N_FOR_TEST:]
@@ -198,6 +199,7 @@ y_test = keras.utils.to_categorical(y_test, num_classes)
 model = keras.Sequential(
     [
         keras.Input(shape=input_shape),
+        #keras.layers.InputLayer(shape=input_shape),
         layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),
         layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),

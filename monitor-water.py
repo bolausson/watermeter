@@ -70,7 +70,7 @@ big_box = {
                 "warm": 
                     {
                         # Smaller number for X moves box more towards the right (end) of the numbers
-                        "upper_left_x": 767,
+                        "upper_left_x": 764,
                         # Smaller number for y moves box more towards the bottom of the numbers
                         "upper_left_y": 474,
                         "box_width": 348,
@@ -91,7 +91,7 @@ big_box = {
                 "cold":
                     {
                         # Smaller number for X moves box more towards the left (start) of the numbers
-                        "upper_left_x": 877,
+                        "upper_left_x": 887,
                         # Smaller number for Y moves box more towards the top of the numbers
                         "upper_left_y": 530,
                         "box_width": 351,
