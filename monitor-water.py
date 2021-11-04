@@ -35,7 +35,7 @@ MANUAL = False
 # If DRYRUN is set to True, no data will be written to InfluxDB
 DRYRUN = False
 # Be verbose!
-DEBUG = True
+DEBUG = False
 # Display the croped image with bounding box, the single features and the recognized values?
 VISUALIZE = True
 # Define the display to show the captured images
@@ -53,7 +53,7 @@ SAVE_IMAGES_FOR_TEST = False
 SAVE_FOR_TRAINING = False
 # Save croped images and just the extracted features which scored below SAVE_IMAGES_BELOW_RETRAIN_THRESH during recognition phase
 RETRAIN_THRESH = 0.99999
-SAVE_IMAGES_BELOW_RETRAIN_THRESH = True
+SAVE_IMAGES_BELOW_RETRAIN_THRESH = False
 
 # Limit the increase from one to another recognition to avoid a false recogniced values make your water consumption plot go through the roof
 # Flow (guideline)
