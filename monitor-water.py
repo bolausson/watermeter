@@ -63,7 +63,7 @@ SAVE_IMAGES_BELOW_RETRAIN_THRESH = False
 # 1 l  = 0.001 m³
 #max_increase = {"warm": 0.05, "cold": 0.03}
 max_increase_mm3 = {"warm": 0.020, "cold": 0.020}
-#max_increase_mm3 = {"warm": 1.000, "cold": 1.000}
+#max_increase_mm3 = {"warm": 100.000, "cold": 100.000}
 
 # Box position and size around all numbers to be extracted
 big_box = {
@@ -72,12 +72,12 @@ big_box = {
                         # Smaller number for X moves box more towards the right (end) of the numbers
                         "upper_left_x": 764,
                         # Smaller number for y moves box more towards the bottom of the numbers
-                        "upper_left_y": 474,
+                        "upper_left_y": 485,
                         "box_width": 348,
                         "box_height": 83,
 
                         # Threshold                        
-                        "thresh_min": 200,
+                        "thresh_min": 165,
                         "thresh_max": 500,
 
                         # Single digit feature box size
@@ -93,7 +93,7 @@ big_box = {
                         # Smaller number for X moves box more towards the left (start) of the numbers
                         "upper_left_x": 887,
                         # Smaller number for Y moves box more towards the top of the numbers
-                        "upper_left_y": 530,
+                        "upper_left_y": 532,
                         "box_width": 351,
                         "box_height": 83,
 
