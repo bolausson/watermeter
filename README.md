@@ -5,6 +5,8 @@ Tools used in this workflow:
   * [Keras](https://keras.io/)
   * [InfluxDB](https://www.influxdata.com/)
 
+You might want to check out [AI-on-the-edge-device](https://github.com/jomjol/AI-on-the-edge-device/) which is way more advanced and easiert to use water meter read-out approach using a ESP32-CAM.
+
 ## Hardware setup
 Attach two webcams to e.g. a RaspberryPi, aim them at your cold and warm water meters
   * Raspberry Pi 4
