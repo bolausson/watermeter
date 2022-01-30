@@ -62,54 +62,11 @@ SAVE_IMAGES_BELOW_RETRAIN_THRESH = False
 # 1 m³ = 1000 l
 # 1 l  = 0.001 m³
 #max_increase = {"warm": 0.05, "cold": 0.03}
-max_increase_mm3 = {"warm": 0.020, "cold": 0.020}
+max_increase_mm3 = {"warm": 0.050, "cold": 0.050}
 #max_increase_mm3 = {"warm": 100.000, "cold": 100.000}
 
-# Box position and size around all numbers to be extracted
-big_box = {
-                "warm": 
-                    {
-                        # Smaller number for X moves box more towards the right (end) of the numbers
-                        "upper_left_x": 764,
-                        # Smaller number for y moves box more towards the bottom of the numbers
-                        "upper_left_y": 485,
-                        "box_width": 348,
-                        "box_height": 83,
-
-                        # Threshold                        
-                        "thresh_min": 165,
-                        "thresh_max": 500,
-
-                        # Single digit feature box size
-                        "width_min": 10,
-                        "width_max": 35,
-                        "height_min": 33,
-                        "height_max": 60,
-                        
-                        "rotate": cv2.ROTATE_180
-                    },
-                "cold":
-                    {
-                        # Smaller number for X moves box more towards the left (start) of the numbers
-                        "upper_left_x": 887,
-                        # Smaller number for Y moves box more towards the top of the numbers
-                        "upper_left_y": 532,
-                        "box_width": 351,
-                        "box_height": 83,
-
-                        # Threshold                        
-                        "thresh_min": 160,
-                        "thresh_max": 500,
-
-                        # Single digit feature box size
-                        "width_min": 10,
-                        "width_max": 35,
-                        "height_min": 33,
-                        "height_max": 60,
-                        
-                        "rotate": False
-                    }
-                }
+# Override max_increase_mm3 if the prediction accuracy is 100%
+override_max_inc = {"warm": True, "cold": True}
 
 # Digits shown on the croped image
 ndigits = 7
@@ -166,6 +123,54 @@ ifdbc = InfluxDBClient(host=IFDB_IP,
                        username=IFDB_USER,
                        password=IFDB_PW,
                        database=IFDB_DB)
+
+
+
+# Box position and size around all numbers to be extracted
+big_box = {
+                "warm": 
+                    {
+                        # Smaller number for X moves box more towards the right (end) of the numbers
+                        "upper_left_x": 764,
+                        # Smaller number for y moves box more towards the bottom of the numbers
+                        "upper_left_y": 485,
+                        "box_width": 348,
+                        "box_height": 83,
+
+                        # Threshold                        
+                        "thresh_min": 165,
+                        "thresh_max": 500,
+
+                        # Single digit feature box size
+                        "width_min": 10,
+                        "width_max": 35,
+                        "height_min": 33,
+                        "height_max": 60,
+                        
+                        "rotate": cv2.ROTATE_180
+                    },
+                "cold":
+                    {
+                        # Smaller number for X moves box more towards the left (start) of the numbers
+                        "upper_left_x": 887,
+                        # Smaller number for Y moves box more towards the top of the numbers
+                        "upper_left_y": 532,
+                        "box_width": 351,
+                        "box_height": 83,
+
+                        # Threshold                        
+                        "thresh_min": 160,
+                        "thresh_max": 500,
+
+                        # Single digit feature box size
+                        "width_min": 10,
+                        "width_max": 35,
+                        "height_min": 33,
+                        "height_max": 60,
+                        
+                        "rotate": False
+                    }
+                }
 
 font = ImageFont.truetype("/usr/share/fonts/dejavu/DejaVuSans.ttf", 60)
 pp = pprint.PrettyPrinter(indent=4)
@@ -241,6 +246,9 @@ def local_time_offset(t=None):
 
 
 def write_to_ifdb(ifdbc, m3, currenttime, mytz, certainty):
+    overall_certainty_warm = float(sum(certainty['warm'].values()))
+    overall_certainty_cold = float(sum(certainty['cold'].values()))
+
     if old_water_counter_value_warm > 0:
         w = m3["warm"] + old_water_counter_value_warm
     else:
@@ -302,10 +310,14 @@ def write_to_ifdb(ifdbc, m3, currenttime, mytz, certainty):
                 else:
                     #if increase_percent_w > max_increase["warm"]:
                     if increase_mm3_w > max_increase_mm3["warm"]:
-                        if DEBUG:
-                            #cprint(f"INFLUXD - warm - Current value ({w} mm³) increased {increase_percent_w}% compared to last value ({w_old} mm³) - ignoring!", "red")
-                            cprint(f"INFLUXD - warm - Current value ({w} mm³) increased {increase_mm3_w:.3f} mm³ compared to last value ({w_old} mm³) - ignoring!", "red")
-                        w = w_old
+                        if override_max_inc["warm"] and overall_certainty_warm == ndigits:
+                            if DEBUG:
+                                cprint(f"INFLUXD - warm - Current value ({w} mm³) increased {increase_mm3_w:.3f} mm³ compared to last value ({w_old} mm³) - Writing value becaue override_max_inc is set to True!", "red")
+                        else:
+                            if DEBUG:
+                                #cprint(f"INFLUXD - warm - Current value ({w} mm³) increased {increase_percent_w}% compared to last value ({w_old} mm³) - ignoring!", "red")
+                                cprint(f"INFLUXD - warm - Current value ({w} mm³) increased {increase_mm3_w:.3f} mm³ compared to last value ({w_old} mm³) - ignoring!", "red")
+                            w = w_old
 
         try:
             c_old = m[0]["cold"]
@@ -337,10 +349,14 @@ def write_to_ifdb(ifdbc, m3, currenttime, mytz, certainty):
                 else:
                     #if increase_percent_c > max_increase["cold"]:
                     if increase_mm3_c > max_increase_mm3["cold"]:
-                        if DEBUG:
-                            #cprint(f"INFLUXD - cold - Current value ({c} mm³) increased {increase_percent_c}% compared to last value ({c_old} mm³) - ignoring!", "red")
-                            cprint(f"INFLUXD - cold - Current value ({c} mm³) increased {increase_mm3_c:.3f} mm³ compared to last value ({c_old} mm³) - ignoring!", "red")
-                        c = c_old
+                        if override_max_inc["cold"] and overall_certainty_cold == ndigits:
+                            if DEBUG:
+                                cprint(f"INFLUXD - cold - Current value ({c} mm³) increased {increase_mm3_c:.3f} mm³ compared to last value ({c_old} mm³) - Writing value becaue override_max_inc_cold is set to True!", "red")
+                        else:
+                            if DEBUG:
+                                #cprint(f"INFLUXD - cold - Current value ({c} mm³) increased {increase_percent_c}% compared to last value ({c_old} mm³) - ignoring!", "red")
+                                cprint(f"INFLUXD - cold - Current value ({c} mm³) increased {increase_mm3_c:.3f} mm³ compared to last value ({c_old} mm³) - ignoring!", "red")
+                            c = c_old
 
         if DEBUG:
             cprint("INFLUXD - Last value from InfluxDB vs. current recognized value", "cyan")
@@ -834,6 +850,10 @@ def recognition(features, thresh, imgc, img_bb, woc):
         m3 = float(m3_tmp/1000)
     
     cprint(f"RECOGNI - {woc} - Value for m3 recognized: {m3}", "green")
+
+    if DEBUG:
+        cprint(f'RECOGNI - {woc} - Overall certainty: {sum(certainty.values())} of {float(ndigits)}')
+
     return m3, certainty
 
 

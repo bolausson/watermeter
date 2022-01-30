@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python3
 #
 #
 
@@ -16,19 +16,6 @@ import numpy as np
 from datetime import datetime
 from termcolor import colored, cprint
 from colorama import Fore, Back, Style
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-
-from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras.datasets import mnist
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.layers import MaxPooling2D
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Flatten
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 pp = pprint.PrettyPrinter(indent=4)
 parser = argparse.ArgumentParser(description='Review image data')
@@ -85,12 +72,14 @@ else:
 for i in review:
     items = len(digit_dict[i])
     print(f"{items} images for number {i}")
+
+for i in review:
+    items = len(digit_dict[i])
+    print(f"{items} images for number {i} will be shown one by one")
     time.sleep(5)
     for j, k in enumerate(digit_dict[i]):
         print(f"{items - j}: {i}")
         
-        #img = keras.preprocessing.image.load_img(j)
-        #img = keras.preprocessing.image.img_to_array(img)
         cv2.imshow("Feature", k)
         keypress = cv2.waitKey(100)
 
