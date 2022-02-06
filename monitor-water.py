@@ -62,11 +62,14 @@ SAVE_IMAGES_BELOW_RETRAIN_THRESH = False
 # 1 m³ = 1000 l
 # 1 l  = 0.001 m³
 #max_increase = {"warm": 0.05, "cold": 0.03}
-max_increase_mm3 = {"warm": 0.050, "cold": 0.050}
+max_increase_mm3 = {"warm": 0.100, "cold": 0.100}
 #max_increase_mm3 = {"warm": 100.000, "cold": 100.000}
 
-# Override max_increase_mm3 if the prediction accuracy is 100%
-override_max_inc = {"warm": True, "cold": True}
+# Override max_increase_mm3 if the prediction accuracy is 100% (will set override_larger_check to True)
+override_max_inc = {"warm": False, "cold": False}
+
+# Ignore check if last value from DB was larger or not compared to current value
+override_larger_check = {"warm": False, "cold": False}
 
 # Digits shown on the croped image
 ndigits = 7
@@ -124,8 +127,6 @@ ifdbc = InfluxDBClient(host=IFDB_IP,
                        password=IFDB_PW,
                        database=IFDB_DB)
 
-
-
 # Box position and size around all numbers to be extracted
 big_box = {
                 "warm": 
@@ -137,8 +138,8 @@ big_box = {
                         "box_width": 348,
                         "box_height": 83,
 
-                        # Threshold                        
-                        "thresh_min": 165,
+                        # Threshold (the higher the less sensitive)
+                        "thresh_min": 140,
                         "thresh_max": 500,
 
                         # Single digit feature box size
@@ -158,8 +159,8 @@ big_box = {
                         "box_width": 351,
                         "box_height": 83,
 
-                        # Threshold                        
-                        "thresh_min": 160,
+                        # Threshold (the higher the less sensitive)
+                        "thresh_min": 130,
                         "thresh_max": 500,
 
                         # Single digit feature box size
@@ -174,6 +175,10 @@ big_box = {
 
 font = ImageFont.truetype("/usr/share/fonts/dejavu/DejaVuSans.ttf", 60)
 pp = pprint.PrettyPrinter(indent=4)
+
+for key in override_max_inc:
+    if override_max_inc[key]:
+        override_larger_check[key]=override_max_inc[key]
 
 def clean_dir_structure():
     # Since there probably will be a lot images and an "rm -f *" will exceed arguments:
@@ -291,7 +296,7 @@ def write_to_ifdb(ifdbc, m3, currenttime, mytz, certainty):
         else:
             w_old = m[0]["warm"]
             
-            if w < w_old:
+            if w < w_old and not override_larger_check["warm"]:
                 w = w_old
 
             try:
@@ -330,7 +335,7 @@ def write_to_ifdb(ifdbc, m3, currenttime, mytz, certainty):
         else:
             c_old = m[0]["cold"]
 
-            if c < c_old:
+            if c < c_old and not override_larger_check["cold"]:
                 c = c_old
 
             try:
